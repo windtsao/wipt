@@ -37,6 +37,12 @@ Copy `.env.example` to `.env` and fill in the values. Google credentials can be 
 python -m wipt.main
 ```
 
+### 5) Run tests
+
+```bash
+pytest
+```
+
 ## Next Steps
 
 - Define Gmail filtering rules (labels, sender, subject, etc.).
