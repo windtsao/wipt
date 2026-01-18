@@ -1,0 +1,55 @@
+from dotenv import load_dotenv
+
+from wipt.config import load_config
+from wipt.gmail_client import GmailClient
+from wipt.pdf_processor import PdfProcessor
+from wipt.pdf_selector import PdfSelector
+from wipt.sheets_client import SheetsClient
+
+
+def main() -> None:
+    load_dotenv()
+    config = load_config()
+
+    gmail_client = GmailClient(
+        client_secrets_path=config.google_client_secrets_path,
+        token_path=config.google_token_path,
+    )
+    pdf_selector = PdfSelector()
+    pdf_processor = PdfProcessor()
+    sheets_client = SheetsClient(
+        spreadsheet_id=config.sheets_spreadsheet_id,
+        worksheet_name=config.sheets_worksheet_name,
+    )
+
+    messages = gmail_client.fetch_messages(
+        query=config.gmail_query,
+        max_results=config.gmail_max_results,
+    )
+
+    for message in messages:
+        selected_pdfs = pdf_selector.select(message.attachments)
+        for pdf in selected_pdfs:
+            extraction = pdf_processor.extract(pdf.data)
+            row_values = [
+                extraction.fields.get("process_time", ""),
+                extraction.fields.get("client_info", ""),
+                extraction.fields.get("ship_to_address", ""),
+                extraction.fields.get("purchase_order_id", ""),
+                extraction.fields.get("purchase_order_date", ""),
+                extraction.fields.get("sales_person", ""),
+                extraction.fields.get("due_date", ""),
+                extraction.fields.get("item", ""),
+                extraction.fields.get("description", ""),
+                extraction.fields.get("quantity", ""),
+                extraction.fields.get("price", ""),
+                extraction.fields.get("total", ""),
+                extraction.fields.get("status", ""),
+                extraction.fields.get("invoice_created", ""),
+                extraction.fields.get("po_created", ""),
+            ]
+            sheets_client.append_row(row_values)
+
+
+if __name__ == "__main__":
+    main()
