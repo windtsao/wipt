@@ -37,6 +37,16 @@ Copy `.env.example` to `.env` and fill in the values. Google credentials can be 
 python -m wipt.main
 ```
 
+### 4a) Integration-style extraction check (local PDF)
+
+```bash
+python -m wipt.cli extract --pdf /path/to/file.pdf
+```
+
+This prints the extracted fields as JSON. Right now they are placeholders until the PDF rules are defined.
+
+Extracted fields currently include: `process_time`, `client_info`, `ship_to_address`, `purchase_order_id`, `purchase_order_date`, `sales_person`, `due_date`, `item`, `description`, `quantity`, `price`, `total`, `status`, `invoice_created`, `po_created`.
+
 ### 5) Run tests
 
 ```bash
