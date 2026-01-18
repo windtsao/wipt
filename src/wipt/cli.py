@@ -11,7 +11,7 @@ def _extract_command(pdf_path: Path) -> int:
     pdf_bytes = pdf_path.read_bytes()
     processor = PdfProcessor()
     result = processor.extract(pdf_bytes)
-    print(json.dumps(result.fields, indent=2, sort_keys=True))
+    print(json.dumps(result.rows, indent=2, sort_keys=True))
     return 0
 
 
