@@ -31,6 +31,35 @@ pip install -e .
 
 Copy `.env.example` to `.env` and fill in the values. Google credentials can be generated via a Google Cloud project with Gmail and Sheets APIs enabled.
 
+### 3a) Gmail auth setup in Google Cloud (step-by-step)
+
+1. Go to the Google Cloud Console and create or select a project:
+   - https://console.cloud.google.com/
+   - Use the project picker in the top bar to select an existing project or create a new one.
+2. Enable the Gmail API:
+   - Navigate to **APIs & Services → Library**.
+   - Search for **Gmail API** and click **Enable**.
+3. Configure the OAuth consent screen:
+   - Go to **APIs & Services → OAuth consent screen**.
+   - Choose **External** (personal Gmail) or **Internal** (Google Workspace).
+   - Fill in the required app info (app name, user support email).
+   - Under **Scopes**, you can leave defaults for now; Gmail scopes are added when the app runs.
+   - If using **External**, add your Gmail address under **Test users**.
+4. Create OAuth client credentials:
+   - Go to **APIs & Services → Credentials**.
+   - Click **Create Credentials → OAuth client ID**.
+   - Choose **Desktop app** as the application type.
+   - Create the client and download the JSON file.
+   - Save it in your repo (example: `./secrets/gmail_client_secrets.json`).
+5. Set environment variables in `.env`:
+   - `GOOGLE_CLIENT_SECRETS_PATH=./secrets/gmail_client_secrets.json`
+   - `GOOGLE_TOKEN_PATH=./secrets/gmail_token.json`
+6. Run the app once to complete OAuth:
+   - `python -m wipt.main`
+   - A browser window will open; sign in to the Gmail account and approve access.
+   - After approval, the token file will be written to `GOOGLE_TOKEN_PATH`.
+7. Re-run the app normally; it will reuse the saved token until it expires.
+
 ### 4) Run
 
 ```bash
