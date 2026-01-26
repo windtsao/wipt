@@ -54,10 +54,10 @@ Copy `.env.example` to `.env` and fill in the values. Google credentials can be 
 5. Set environment variables in `.env`:
    - `GOOGLE_CLIENT_SECRETS_PATH=./secrets/gmail_client_secrets.json`
    - `GOOGLE_TOKEN_PATH=./secrets/gmail_token.json`
-6. Generate the token file by running the app once to complete OAuth:
+6. Run the app once to complete OAuth:
    - `python -m wipt.main`
    - A browser window will open; sign in to the Gmail account and approve access.
-   - After approval, the token file (`gmail_token.json`) will be written to `GOOGLE_TOKEN_PATH`.
+   - After approval, the token file will be written to `GOOGLE_TOKEN_PATH`.
 7. Re-run the app normally; it will reuse the saved token until it expires.
 
 ### 4) Run
