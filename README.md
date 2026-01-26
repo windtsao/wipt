@@ -84,10 +84,10 @@ pytest
 
 ## Deploying to Google Cloud
 
-The easiest managed option is Cloud Run (serverless container). Below is a complete setup path
-from enabling services to deploying and running the job.
+The easiest managed option is Cloud Run (serverless container). Below is the minimal set of
+steps required to deploy.
 
-### 1) Enable required Google Cloud services
+### 1) Enable required services and set the project
 
 ```bash
 gcloud auth login
@@ -95,33 +95,14 @@ gcloud config set project YOUR_PROJECT_ID
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com
 ```
 
-> If you plan to run Gmail + Sheets on Cloud Run, ensure the Gmail API and Sheets API are
-> enabled in the same project from **APIs & Services → Library**.
-
-### 2) Create a service account and grant access
-
-```bash
-gcloud iam service-accounts create wipt-runner \
-  --display-name "WIPT Cloud Run"
-
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-  --member "serviceAccount:wipt-runner@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
-  --role "roles/secretmanager.secretAccessor"
-```
-
-If you plan to access Google Sheets via a service account, share the spreadsheet with
-`wipt-runner@YOUR_PROJECT_ID.iam.gserviceaccount.com`.
-
-### 3) Store secrets in Secret Manager
-
-Store your OAuth client secrets JSON and the generated token file as secrets:
+### 2) Store OAuth secrets in Secret Manager
 
 ```bash
 gcloud secrets create gmail-client-secrets --data-file=./secrets/gmail_client_secrets.json
 gcloud secrets create gmail-token --data-file=./secrets/gmail_token.json
 ```
 
-### 4) Containerize the app
+### 3) Containerize the app
 
 Create a `Dockerfile` that installs dependencies and runs the module:
 
@@ -138,26 +119,25 @@ COPY src ./src
 CMD ["python", "-m", "wipt.main"]
 ```
 
-### 5) Build and push the container
+### 4) Build and push the container
 
 ```bash
 gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/wipt
 ```
 
-### 6) Deploy to Cloud Run
+### 5) Deploy to Cloud Run
 
 ```bash
 gcloud run deploy wipt \
   --image gcr.io/YOUR_PROJECT_ID/wipt \
   --region us-central1 \
   --platform managed \
-  --service-account wipt-runner@YOUR_PROJECT_ID.iam.gserviceaccount.com \
   --no-allow-unauthenticated \
   --set-secrets GOOGLE_CLIENT_SECRETS_PATH=gmail-client-secrets:latest \
   --set-secrets GOOGLE_TOKEN_PATH=gmail-token:latest
 ```
 
-### 7) Set runtime configuration
+### 6) Set runtime configuration
 
 Set environment variables and mount or bake in secrets:
 
