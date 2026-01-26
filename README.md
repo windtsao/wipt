@@ -82,6 +82,59 @@ Extracted fields currently include: `process_time`, `client_info`, `ship_to_addr
 pytest
 ```
 
+## Deploying to Google Cloud
+
+The easiest managed option is Cloud Run (serverless container). Below is a simple deployment path:
+
+### 1) Containerize the app
+
+Create a `Dockerfile` that installs dependencies and runs the module:
+
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt pyproject.toml ./
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -e .
+
+COPY src ./src
+
+CMD ["python", "-m", "wipt.main"]
+```
+
+### 2) Build and push the container
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/wipt
+```
+
+### 3) Deploy to Cloud Run
+
+```bash
+gcloud run deploy wipt \
+  --image gcr.io/YOUR_PROJECT_ID/wipt \
+  --region us-central1 \
+  --platform managed \
+  --allow-unauthenticated
+```
+
+### 4) Set runtime configuration
+
+Set environment variables and mount or bake in secrets:
+
+```bash
+gcloud run services update wipt \
+  --set-env-vars GMAIL_QUERY="has:attachment filename:pdf",GMAIL_MAX_RESULTS=25 \
+  --set-env-vars GOOGLE_CLIENT_SECRETS_PATH=/app/secrets/gmail_client_secrets.json \
+  --set-env-vars GOOGLE_TOKEN_PATH=/app/secrets/gmail_token.json \
+  --set-env-vars SHEETS_SPREADSHEET_ID=YOUR_SHEET_ID,SHEETS_WORKSHEET_NAME=Sheet1
+```
+
+> Note: For Gmail OAuth on Cloud Run, you should use a service account–based OAuth flow or pre-generate a refresh token and store it securely (e.g., Secret Manager). The current desktop OAuth flow is intended for local runs.
+
 ## Next Steps
 
 - Define Gmail filtering rules (labels, sender, subject, etc.).
